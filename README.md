@@ -1,3 +1,10 @@
+Why
+===
+
+I try to reproduce https://learn.hashicorp.com/consul/getting-started/connect
+but some step is missing in the article. So I create this Vagrant box to
+helping me in consul connect experimentation.
+
 Launch
 ======
 
