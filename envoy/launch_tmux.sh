@@ -1,0 +1,44 @@
+#!/bin/bash
+TMUX_SESSION="ConsulConnect"
+
+if [ "$1" = "kill" ]; then
+	echo "Kill everything"
+	tmux send-keys  -t console         C-c C-m "exit" C-m
+	tmux send-keys  -t consul          C-c C-m "exit" C-m
+	if [ "${HOSTNAME}" = "consul01" ]; then
+		tmux send-keys  -t socat         C-c C-m "exit" C-m
+		tmux send-keys  -t sidecar_socat C-c C-m "exit" C-m
+		tmux send-keys  -t proxy_web     C-c C-m "exit" C-m
+		tmux send-keys  -t sidecar_web   C-c C-m "exit" C-m
+	fi
+	exit 0
+fi
+
+if [ "$1" = "app" ]; then
+	if [ "${HOSTNAME}" = "consul01" ]; then
+		tmux send-keys  -t socat         "/vagrant/launch_02_socat.sh"               C-m
+		tmux send-keys  -t sidecar_socat "/vagrant/launch_03_proxy_sidecar_socat.sh" C-m
+		tmux send-keys  -t proxy_web     "/vagrant/launch_04_proxy_service_web.sh"   C-m
+		tmux send-keys  -t sidecar_web   "/vagrant/launch_05_proxy_sidecar_web.sh"   C-m
+	fi
+fi
+
+tmux has-session -t ${TMUX_SESSION}
+if [ $? != 0 ]; then
+	echo "Creation ${TMUX_SESSION} session"
+	tmux new-session -s ${TMUX_SESSION} -n ${TMUX_SESSION} -d
+	tmux set-option base-index 1
+	tmux send-keys -t ${TMUX_SESSION} "exit" C-m
+	tmux new-window -n console
+	tmux new-window -n consul
+	if [ "${HOSTNAME}" = "consul01" ]; then
+		tmux new-window -n socat
+		tmux new-window -n sidecar_socat
+		tmux new-window -n proxy_web
+		tmux new-window -n sidecar_web
+	fi
+	tmux send-keys  -t console       "cat /vagrant/README_envoy.md" C-m
+	tmux send-keys  -t consul        "/vagrant/launch_01_consul.sh" C-m
+fi
+
+tmux attach -t ${TMUX_SESSION}

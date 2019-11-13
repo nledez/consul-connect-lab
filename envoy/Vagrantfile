@@ -1,0 +1,26 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/bionic64"
+
+  config.vm.define "consul01" do |consul01|
+    consul01.vm.network "forwarded_port", guest: 8500, host: 8500
+    consul01.vm.hostname = "consul01"
+    consul01.vm.network "private_network", ip: "192.168.50.11"
+  end
+
+  config.vm.define "consul02" do |consul02|
+    consul02.vm.hostname = "consul02"
+    consul02.vm.network "private_network", ip: "192.168.50.12"
+  end
+
+  config.vm.define "consul03" do |consul03|
+    consul03.vm.hostname = "consul03"
+    consul03.vm.network "private_network", ip: "192.168.50.13"
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    /vagrant/consul_install.sh
+  SHELL
+end
